@@ -1,0 +1,117 @@
+<html>
+  <head>
+    <title>My page title</title>
+	<style>
+		#zombie_map {
+   		 width: 600px;
+    		 height: 430px;
+   		 background-color: grey;
+		}
+	</style>
+  </head>
+  <body>
+	My zombie map
+	<div id="zombie_map"></div>
+<form>
+<select id="icon_to_use">
+  <option value="zombie.png">Zombie</option>
+  <option value="hospital.png">Hospital</option>
+  <option value="weapons.png">Weapons</option>
+
+</select>
+</form>
+	<script>
+    var zombie_map;
+var data = `-33.32790163504759 115.63333882645873 zombie.png 
+-33.32765968968343 115.63249289989471 zombie.png 
+-33.3273817 115.63264681653288 zombie.png 
+-33.32669143660883 115.63312961415556 zombie.png 
+-33.3272920557127 115.63363386945036 zombie.png 
+-33.326749705807714 115.63347293690947 hospital.png 
+-33.32747582640239 115.6331725294998 weapons.png 
+-33.32728309127889 115.63300086812285 weapons.png 
+-33.326920030934865 115.63364996270445 weapons.png 
+-33.32777165157655 115.6329204018524 weapons.png 
+`;
+var markers = data.split("\n");
+var all_markers = [];
+var old_position;
+var tolerance = 10;   
+var score;
+
+    function initMap() {
+
+            zombie_map = new google.maps.Map(document.getElementById('zombie_map'), {
+            zoom: 18,
+            center: {lat: -33.3273817, lng: 115.6328453}
+        });
+if(navigator.geolocation) {
+    navigator.geolocation.watchPosition(set_my_position);
+}
+else {
+    alert("Geolocation doesn't work in your browser");
+}
+
+
+// add markers
+for(var i=0; i < markers.length; i++){
+            // Split this marker's info into an array
+            var marker_data = markers[i].trim().split(" ");
+            // Create the LatLng of the marker
+            var marker_position = new google.maps.LatLng(marker_data[0], marker_data[1]);
+            // Create a marker at this point
+            var marker = new google.maps.Marker({
+              position: marker_position,
+              icon: marker_data[2],
+              map: zombie_map
+            });
+            // Add this marker to the list
+            all_markers.push(marker);
+        }
+        console.log(all_markers);
+old_position = new google.maps.Marker({
+            position: {lat: -33.3273817, lng: 115.6328453},
+            map: zombie_map
+        })
+
+function set_my_position(position){
+old_position.setMap(null); 
+var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+var marker = new google.maps.Marker({
+          position: pos,
+          icon: "player.png",
+          map: zombie_map
+        });
+old_position = marker;
+
+for(var i=0; i < all_markers.length; i++){
+            var distance = google.maps.geometry.spherical.computeDistanceBetween(pos, all_markers[i].getPosition());
+if( distance < tolerance ){
+    var what_is_it = all_markers[i].getIcon();
+    what_is_it = what_is_it.replace(".png", "");
+    alert("Found the " + what_is_it );
+    all_markers[i].setMap(null);
+    if(what_is_it != "zombie"){
+	score+=10;
+	alert("Your score: "+ score);
+	}
+	
+}
+
+           }
+}
+
+    }
+
+</script>
+
+
+
+
+    Items I want to appear on my page will go here
+ 	<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC2TyH5IPqrfcq9rBtXRVnn4YKoOfFBydE &callback=initMap&libraries=geometry">
+  </script>
+
+ </body>
+</html>
